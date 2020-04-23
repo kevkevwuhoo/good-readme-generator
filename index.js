@@ -36,6 +36,11 @@ const questions = [
     },
     {
         type: "input",
+        message: "Repo name?",
+        name: "repo",
+    },
+    {
+        type: "input",
         message: "Write a short description of your project",
         name: "description",
     },
@@ -56,8 +61,8 @@ const questions = [
     },
     {
         type: "input",
-        message: "What does the user need to know about using this repo?",
-        name: "needToKnow",
+        message: "What does the user need to know about using this project?",
+        name: "usage",
     },
     {
         type: "input",
@@ -66,12 +71,9 @@ const questions = [
     },
 ];
 
-// expected output from github api
-// github picture and email
-
 function writeToFile(fileName, data) {
     // generateMarkdown
-    fs.appendFile(fileName, data, (err) => console.log(err));
+    fs.writeFile(fileName, data, (err) => console.log(err));
 }
 
 function init() {
@@ -80,13 +82,15 @@ function init() {
     inquirer
         .prompt(questions)
         .then((response) => {
-            // console.log(response.data);
+            // store user input
             const readMeData = { ...response };
+            // use username to get email and profile image
             api.getUser(response.username).then((res) => {
                 const { email, avatar_url } = res.data;
-                console.log(res.data);
-                const newReadMeData = { ...readMeData, email: email, image: avatar_url };
-                // console.log(newReadMeData);
+                const newReadMeData = { ...readMeData, user: response.username, email: email, image: avatar_url };
+                // use project info to generate README file
+                const readMeMarkdown = generateMarkdown(newReadMeData);
+                writeToFile("README.md", readMeMarkdown);
             });
         })
         .catch((err) => console.log(err));
