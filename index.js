@@ -1,5 +1,9 @@
+require("dotenv").config();
 // need inquirer for user input
 var inquirer = require("inquirer");
+var fs = require("fs");
+var api = require("./utils/api");
+var generateMarkdown = require("./utils/generateMarkdown");
 
 // questions:
 // what is your github username?
@@ -53,7 +57,7 @@ const questions = [
     {
         type: "input",
         message: "What does the user need to know about using this repo?",
-        name: "need-to-know",
+        name: "needToKnow",
     },
     {
         type: "input",
@@ -62,34 +66,30 @@ const questions = [
     },
 ];
 
-inquirer.prompt(questions).then(function (response) {
-    if (response.confirm === response.password) {
-        console.log("Success!");
-    } else {
-        console.log("You forgot your password already?!");
-    }
-});
-
 // expected output from github api
 // github picture and email
 
 function writeToFile(fileName, data) {
-    // At least one badge
-    // Project title
-    // Description
-    // Table of Contents
-    // Installation
-    // Usage
-    // credits
-    // License
-    // badges
-    // Contributing
-    // Tests
-    // Questions
-    // User GitHub profile picture
-    // User GitHub email
+    // generateMarkdown
+    fs.appendFile(fileName, data, (err) => console.log(err));
 }
 
-function init() {}
+function init() {
+    // ask the user questions
+    // get user input
+    inquirer
+        .prompt(questions)
+        .then((response) => {
+            // console.log(response.data);
+            const readMeData = { ...response };
+            api.getUser(response.username).then((res) => {
+                const { email, avatar_url } = res.data;
+                console.log(res.data);
+                const newReadMeData = { ...readMeData, email: email, image: avatar_url };
+                // console.log(newReadMeData);
+            });
+        })
+        .catch((err) => console.log(err));
+}
 
 init();
